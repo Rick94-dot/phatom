@@ -421,13 +421,19 @@
   }
 
   .chat-back {
-    margin-left: auto;
     background: none;
     border: none;
     font-size: 13px;
     font-weight: 600;
     color: #0F5A6B;
     cursor: pointer;
+  }
+
+  .chat-header-actions {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 16px;
   }
 
   .chat-back:hover { text-decoration: underline; }
@@ -1081,7 +1087,10 @@
       </svg>
     </div>
     <h2>Cotação — Fatia de Ouro</h2>
-    <button type="button" class="chat-back" id="chatBackBtn">Voltar</button>
+    <div class="chat-header-actions">
+      <button type="button" class="chat-back" id="chatResetBtn">Refazer</button>
+      <button type="button" class="chat-back" id="chatBackBtn">Voltar</button>
+    </div>
   </div>
 
   <div class="chat-messages" id="chatMessages">
@@ -1391,7 +1400,7 @@
   const searchChip = document.getElementById('searchChip');
   const chatMessagesInner = document.getElementById('chatMessagesInner');
   const chatMessages = document.getElementById('chatMessages');
-  const chatEmptyState = document.getElementById('chatEmptyState');
+  let chatEmptyState = document.getElementById('chatEmptyState');
 
   let placeholderIndex = 0;
   let placeholderTimer = null;
@@ -1556,6 +1565,7 @@
   // ---------- Estado da cotação ----------
   const cotacao = {
     step: 'tipo_evento',
+    token: 0,
     tipoEvento: null,
     quantidadePessoas: null,
     sabores: null,
@@ -1564,55 +1574,63 @@
     endereco: null,
   };
 
-  async function iniciarFluxo() {
+  async function iniciarFluxo(token) {
     setInputEnabled(false);
     await botSay('Oi! Vou te ajudar a montar sua cotação 🍕 Pra começar, me conta: é pra qual tipo de evento?', 600);
+    if (token !== cotacao.token) return;
     addOptionButtons(['Aniversário', 'Empresa', 'Casamento', 'Dia a dia'], (opt) => {
+      if (token !== cotacao.token) return;
       cotacao.tipoEvento = opt;
       cotacao.step = 'pessoas';
-      perguntarPessoas();
+      perguntarPessoas(token);
     });
   }
 
-  async function perguntarPessoas() {
+  async function perguntarPessoas(token) {
     await botSay('Legal! Para quantas pessoas, mais ou menos?');
+    if (token !== cotacao.token) return;
     setInputEnabled(true);
     chatInput.focus();
   }
 
-  async function perguntarSabores() {
+  async function perguntarSabores(token) {
     await botSay('Show. Tem algum sabor de pizza preferido, ou posso sugerir os mais pedidos?');
+    if (token !== cotacao.token) return;
     setInputEnabled(true);
     chatInput.focus();
   }
 
-  async function perguntarDataHorario() {
+  async function perguntarDataHorario(token) {
     await botSay('Anotado. Para quando é o evento? (data e horário)');
+    if (token !== cotacao.token) return;
     setInputEnabled(true);
     chatInput.focus();
   }
 
-  async function perguntarEntrega() {
+  async function perguntarEntrega(token) {
     await botSay('Perfeito. Você prefere retirar no local ou quer que a gente entregue?');
+    if (token !== cotacao.token) return;
     addOptionButtons(['Retirar no local', 'Receber em casa'], (opt) => {
+      if (token !== cotacao.token) return;
       cotacao.metodoEntrega = opt;
       if (opt === 'Receber em casa') {
         cotacao.step = 'endereco';
-        perguntarEndereco();
+        perguntarEndereco(token);
       } else {
         cotacao.step = 'recomendacao';
-        gerarRecomendacao();
+        gerarRecomendacao(token);
       }
     });
   }
 
-  async function perguntarEndereco() {
+  async function perguntarEndereco(token) {
     await botSay('Beleza, me passa o endereço de entrega');
+    if (token !== cotacao.token) return;
     setInputEnabled(true);
     chatInput.focus();
   }
 
-  async function gerarRecomendacao() {
+  async function gerarRecomendacao(token) {
     setInputEnabled(false);
     const plano = recomendarPlano(cotacao.tipoEvento, cotacao.quantidadePessoas);
 
@@ -1624,21 +1642,28 @@
     const resumo = `Com base no que você me contou, recomendo o ${plano.nome} 🎉 — ${plano.pizzas} pizzas grandes (${cotacao.sabores}), ${entregaTexto}, para ${cotacao.dataHorario}. Valor estimado: ${formatarMoeda(plano.valor)}.`;
 
     await botSay(resumo, 900);
+    if (token !== cotacao.token) return;
     cotacao.step = 'documento_1';
-    await enviarDocumentacao();
+    await enviarDocumentacao(token);
   }
 
-  async function enviarDocumentacao() {
+  async function enviarDocumentacao(token) {
     await botSay('Vou preparar a documentação enquanto isso, olha as condições gerais do produto que está contratando', 700);
+    if (token !== cotacao.token) return;
     addDocumentCard('Condições_Gerais.pdf', 'Documento de exemplo · 1.2 MB');
 
     cotacao.step = 'carregando';
     showTyping();
     await new Promise((resolve) => setTimeout(resolve, 5000));
+    if (token !== cotacao.token) {
+      hideTyping();
+      return;
+    }
     hideTyping();
 
     cotacao.step = 'documento_2';
     await botSay('Aqui está a documentação, o nosso setor responsável já recebeu os dados e eles entraram em contato pelo meio de comunicação que o senhor me informou!', 300);
+    if (token !== cotacao.token) return;
     addDocumentCard('Documentação_Contratada.pdf', 'Documento de exemplo · 890 KB');
 
     cotacao.step = 'finalizado';
@@ -1649,6 +1674,8 @@
     const value = chatInput.value.trim();
     if (!value || chatInput.disabled) return;
 
+    const token = cotacao.token;
+
     addMessage(value, 'user');
     chatInput.value = '';
     aiInputBox.classList.remove('active');
@@ -1658,19 +1685,19 @@
       const numero = parseInt(value.replace(/\D/g, ''), 10);
       cotacao.quantidadePessoas = isNaN(numero) ? value : numero;
       cotacao.step = 'sabores';
-      perguntarSabores();
+      perguntarSabores(token);
     } else if (cotacao.step === 'sabores') {
       cotacao.sabores = value;
       cotacao.step = 'data_horario';
-      perguntarDataHorario();
+      perguntarDataHorario(token);
     } else if (cotacao.step === 'data_horario') {
       cotacao.dataHorario = value;
       cotacao.step = 'entrega';
-      perguntarEntrega();
+      perguntarEntrega(token);
     } else if (cotacao.step === 'endereco') {
       cotacao.endereco = value;
       cotacao.step = 'recomendacao';
-      gerarRecomendacao();
+      gerarRecomendacao(token);
     } else {
       setInputEnabled(true);
     }
@@ -1684,12 +1711,33 @@
     }
   });
 
+  function resetChat() {
+    cotacao.token++;
+    cotacao.step = 'tipo_evento';
+    cotacao.tipoEvento = null;
+    cotacao.quantidadePessoas = null;
+    cotacao.sabores = null;
+    cotacao.dataHorario = null;
+    cotacao.metodoEntrega = null;
+    cotacao.endereco = null;
+
+    hideTyping();
+    chatMessagesInner.innerHTML = '<div class="chat-empty" id="chatEmptyState">Digite sua mensagem abaixo para começar sua cotação.</div>';
+    chatEmptyState = document.getElementById('chatEmptyState');
+    chatInput.value = '';
+    setInputEnabled(false);
+
+    iniciarFluxo(cotacao.token);
+  }
+
+  document.getElementById('chatResetBtn').addEventListener('click', resetChat);
+
   let chatStarted = false;
   quoteBtn.addEventListener('click', () => {
     if (!chatStarted) {
       chatStarted = true;
       setInputEnabled(false);
-      iniciarFluxo();
+      iniciarFluxo(cotacao.token);
     }
   });
 
