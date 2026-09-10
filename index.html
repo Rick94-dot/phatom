@@ -611,6 +611,104 @@
     color: #0F5A6B;
     outline: 1px solid rgba(15, 90, 107, 0.4);
   }
+
+  /* ---------- Botões de opção dentro do chat ---------- */
+  .option-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+    padding-left: 44px;
+  }
+
+  .option-btn {
+    padding: 9px 16px;
+    border-radius: 999px;
+    border: 1.5px solid #0F5A6B;
+    background: #ffffff;
+    color: #0F5A6B;
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 150ms ease, color 150ms ease;
+  }
+
+  .option-btn:hover {
+    background: #0F5A6B;
+    color: #ffffff;
+  }
+
+  .option-btn:disabled {
+    opacity: 0.4;
+    cursor: default;
+    background: #ffffff;
+    color: #0F5A6B;
+  }
+
+  /* ---------- Indicador de digitando ---------- */
+  .typing-dots {
+    display: flex;
+    gap: 4px;
+    padding: 4px 2px;
+  }
+
+  .typing-dots span {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.35);
+    animation: typing-bounce 1.2s infinite ease-in-out;
+  }
+
+  .typing-dots span:nth-child(2) { animation-delay: 0.15s; }
+  .typing-dots span:nth-child(3) { animation-delay: 0.3s; }
+
+  @keyframes typing-bounce {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+    30% { transform: translateY(-4px); opacity: 1; }
+  }
+
+  /* ---------- Card de documento (placeholder) ---------- */
+  .doc-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+    padding: 10px 14px;
+    background: rgba(0,0,0,0.04);
+    border: 1px solid rgba(0,0,0,0.1);
+    border-radius: 12px;
+    max-width: 260px;
+  }
+
+  .doc-card .doc-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    background: #0F5A6B;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .doc-card .doc-icon svg { width: 18px; height: 18px; color: #F5B400; }
+
+  .doc-card .doc-info { min-width: 0; }
+
+  .doc-card .doc-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: #111111;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .doc-card .doc-meta {
+    font-size: 11.5px;
+    color: rgba(0,0,0,0.5);
+  }
 </style>
 </head>
 <body>
@@ -1049,19 +1147,240 @@
     chatMessagesInner.appendChild(row);
 
     chatMessages.scrollTop = chatMessages.scrollHeight;
+    return row;
+  }
+
+  function addDocumentCard(filename, meta) {
+    const lastBotRow = chatMessagesInner.querySelector('.msg-row.bot:last-child .msg-bubble');
+    if (!lastBotRow) return;
+
+    const card = document.createElement('div');
+    card.className = 'doc-card';
+    card.innerHTML = `
+      <div class="doc-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/>
+          <path d="M14 2v6h6"/>
+        </svg>
+      </div>
+      <div class="doc-info">
+        <div class="doc-name">${filename}</div>
+        <div class="doc-meta">${meta}</div>
+      </div>
+    `;
+    lastBotRow.parentElement.appendChild(card);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+
+  function addOptionButtons(options, onPick) {
+    const wrap = document.createElement('div');
+    wrap.className = 'option-buttons';
+
+    options.forEach((opt) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'option-btn';
+      btn.textContent = opt;
+      btn.addEventListener('click', () => {
+        Array.from(wrap.children).forEach((b) => (b.disabled = true));
+        addMessage(opt, 'user');
+        onPick(opt);
+      });
+      wrap.appendChild(btn);
+    });
+
+    chatMessagesInner.appendChild(wrap);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+
+  function showTyping() {
+    const row = document.createElement('div');
+    row.className = 'msg-row bot';
+    row.id = 'typingRow';
+
+    const avatar = document.createElement('div');
+    avatar.className = 'msg-avatar';
+    avatar.textContent = 'FO';
+
+    const bubble = document.createElement('div');
+    bubble.className = 'msg-bubble';
+    bubble.innerHTML = '<div class="typing-dots"><span></span><span></span><span></span></div>';
+
+    row.appendChild(avatar);
+    row.appendChild(bubble);
+    chatMessagesInner.appendChild(row);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+
+  function hideTyping() {
+    const row = document.getElementById('typingRow');
+    if (row) row.remove();
+  }
+
+  function botSay(text, delay = 700) {
+    return new Promise((resolve) => {
+      showTyping();
+      setTimeout(() => {
+        hideTyping();
+        addMessage(text, 'bot');
+        resolve();
+      }, delay);
+    });
+  }
+
+  function setInputEnabled(enabled) {
+    chatInput.disabled = !enabled;
+    sendBtn.disabled = !enabled;
+    chatInput.placeholder = enabled ? PLACEHOLDERS[placeholderIndex] : 'Aguardando resposta acima…';
+  }
+
+  // ---------- Tabela de planos (exemplo editável) ----------
+  const PLANOS = [
+    { nome: 'Plano Individual', min: 1, max: 4, pizzas: 2, valor: 90, eventos: ['Dia a dia'] },
+    { nome: 'Plano Festa Pequena', min: 5, max: 15, pizzas: 6, valor: 240, eventos: ['Aniversário'] },
+    { nome: 'Plano Festa Grande', min: 16, max: 40, pizzas: 15, valor: 560, eventos: ['Aniversário', 'Dia a dia'] },
+    { nome: 'Plano Corporativo', min: 20, max: 60, pizzas: 22, valor: 780, eventos: ['Empresa'] },
+    { nome: 'Plano Casamento', min: 50, max: 99999, pizzas: 40, valor: 1400, eventos: ['Casamento'] },
+  ];
+
+  function recomendarPlano(tipoEvento, quantidadePessoas) {
+    const candidatos = PLANOS.filter(
+      (p) => quantidadePessoas >= p.min && quantidadePessoas <= p.max
+    );
+
+    if (candidatos.length === 0) {
+      return PLANOS[PLANOS.length - 1];
+    }
+
+    const combinaEvento = candidatos.find((p) => p.eventos.includes(tipoEvento));
+    return combinaEvento || candidatos[0];
+  }
+
+  function formatarMoeda(valor) {
+    return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  }
+
+  // ---------- Estado da cotação ----------
+  const cotacao = {
+    step: 'tipo_evento',
+    tipoEvento: null,
+    quantidadePessoas: null,
+    sabores: null,
+    dataHorario: null,
+    metodoEntrega: null,
+    endereco: null,
+  };
+
+  async function iniciarFluxo() {
+    setInputEnabled(false);
+    await botSay('Oi! Vou te ajudar a montar sua cotação 🍕 Pra começar, me conta: é pra qual tipo de evento?', 600);
+    addOptionButtons(['Aniversário', 'Empresa', 'Casamento', 'Dia a dia'], (opt) => {
+      cotacao.tipoEvento = opt;
+      cotacao.step = 'pessoas';
+      perguntarPessoas();
+    });
+  }
+
+  async function perguntarPessoas() {
+    await botSay('Legal! Para quantas pessoas, mais ou menos?');
+    setInputEnabled(true);
+    chatInput.focus();
+  }
+
+  async function perguntarSabores() {
+    await botSay('Show. Tem algum sabor de pizza preferido, ou posso sugerir os mais pedidos?');
+    setInputEnabled(true);
+    chatInput.focus();
+  }
+
+  async function perguntarDataHorario() {
+    await botSay('Anotado. Para quando é o evento? (data e horário)');
+    setInputEnabled(true);
+    chatInput.focus();
+  }
+
+  async function perguntarEntrega() {
+    await botSay('Perfeito. Você prefere retirar no local ou quer que a gente entregue?');
+    addOptionButtons(['Retirar no local', 'Receber em casa'], (opt) => {
+      cotacao.metodoEntrega = opt;
+      if (opt === 'Receber em casa') {
+        cotacao.step = 'endereco';
+        perguntarEndereco();
+      } else {
+        cotacao.step = 'recomendacao';
+        gerarRecomendacao();
+      }
+    });
+  }
+
+  async function perguntarEndereco() {
+    await botSay('Beleza, me passa o endereço de entrega');
+    setInputEnabled(true);
+    chatInput.focus();
+  }
+
+  async function gerarRecomendacao() {
+    setInputEnabled(false);
+    const plano = recomendarPlano(cotacao.tipoEvento, cotacao.quantidadePessoas);
+
+    const entregaTexto =
+      cotacao.metodoEntrega === 'Receber em casa'
+        ? `entrega em ${cotacao.endereco}`
+        : 'retirada no local';
+
+    const resumo = `Com base no que você me contou, recomendo o ${plano.nome} 🎉 — ${plano.pizzas} pizzas grandes (${cotacao.sabores}), ${entregaTexto}, para ${cotacao.dataHorario}. Valor estimado: ${formatarMoeda(plano.valor)}.`;
+
+    await botSay(resumo, 900);
+    cotacao.step = 'documento_1';
+    await enviarDocumentacao();
+  }
+
+  async function enviarDocumentacao() {
+    await botSay('Vou preparar a documentação enquanto isso, olha as condições gerais do produto que está contratando', 700);
+    addDocumentCard('Condições_Gerais.pdf', 'Documento de exemplo · 1.2 MB');
+
+    cotacao.step = 'carregando';
+    showTyping();
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+    hideTyping();
+
+    cotacao.step = 'documento_2';
+    await botSay('Aqui está a documentação, o nosso setor responsável já recebeu os dados e eles entraram em contato pelo meio de comunicação que o senhor me informou!', 300);
+    addDocumentCard('Documentação_Contratada.pdf', 'Documento de exemplo · 890 KB');
+
+    cotacao.step = 'finalizado';
+    await botSay('Agradecemos a preferência! Qualquer dúvida, estamos à disposição 🍕', 900);
   }
 
   function sendMessage() {
     const value = chatInput.value.trim();
-    if (!value) return;
+    if (!value || chatInput.disabled) return;
 
     addMessage(value, 'user');
     chatInput.value = '';
     aiInputBox.classList.remove('active');
+    setInputEnabled(false);
 
-    setTimeout(() => {
-      addMessage('Oi', 'bot');
-    }, 600);
+    if (cotacao.step === 'pessoas') {
+      const numero = parseInt(value.replace(/\D/g, ''), 10);
+      cotacao.quantidadePessoas = isNaN(numero) ? value : numero;
+      cotacao.step = 'sabores';
+      perguntarSabores();
+    } else if (cotacao.step === 'sabores') {
+      cotacao.sabores = value;
+      cotacao.step = 'data_horario';
+      perguntarDataHorario();
+    } else if (cotacao.step === 'data_horario') {
+      cotacao.dataHorario = value;
+      cotacao.step = 'entrega';
+      perguntarEntrega();
+    } else if (cotacao.step === 'endereco') {
+      cotacao.endereco = value;
+      cotacao.step = 'recomendacao';
+      gerarRecomendacao();
+    } else {
+      setInputEnabled(true);
+    }
   }
 
   sendBtn.addEventListener('click', sendMessage);
@@ -1069,6 +1388,15 @@
     if (e.key === 'Enter') {
       e.preventDefault();
       sendMessage();
+    }
+  });
+
+  let chatStarted = false;
+  quoteBtn.addEventListener('click', () => {
+    if (!chatStarted) {
+      chatStarted = true;
+      setInputEnabled(false);
+      iniciarFluxo();
     }
   });
 </script>
