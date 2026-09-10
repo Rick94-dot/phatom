@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Fatia de Ouro — Login</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  .page {
+    min-height: 100vh;
+    display: flex;
+    background: #ffffff;
+  }
+
+  .form-side {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  .card {
+    width: 100%;
+    max-width: 420px;
+    background: #F5B400;
+    border-radius: 28px;
+    padding: 40px 36px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+
+  .brand-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 16px;
+    background: #0F5A6B;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .brand-icon svg { width: 22px; height: 22px; }
+
+  .brand h1 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: #0F5A6B;
+    line-height: 1.2;
+  }
+
+  .brand p {
+    margin: 2px 0 0;
+    font-size: 13px;
+    color: rgba(15, 90, 107, 0.7);
+  }
+
+  .field {
+    margin-bottom: 20px;
+  }
+
+  .input-wrap {
+    position: relative;
+  }
+
+  .input-wrap svg.icon-left {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    color: #F5B400;
+    pointer-events: none;
+  }
+
+  .input-wrap input {
+    width: 100%;
+    padding: 14px 48px 14px 46px;
+    background: #0F5A6B;
+    color: #fff;
+    border: 2px solid rgba(0,0,0,0.8);
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    outline: none;
+    transition: box-shadow 0.15s ease;
+  }
+
+  .input-wrap input::placeholder {
+    color: rgba(255,255,255,0.6);
+  }
+
+  .input-wrap input:focus {
+    box-shadow: 0 0 0 3px rgba(15, 90, 107, 0.35);
+  }
+
+  .toggle-pw {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: rgba(255,255,255,0.7);
+    display: flex;
+    padding: 4px;
+  }
+
+  .toggle-pw:hover { color: #fff; }
+  .toggle-pw svg { width: 20px; height: 20px; }
+
+  .error-text {
+    margin: 6px 0 0;
+    font-size: 12px;
+    font-weight: 600;
+    color: #7a3b00;
+    display: none;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .error-text.visible { display: flex; }
+  .error-text svg { width: 12px; height: 12px; }
+
+  .row-between {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 22px;
+    margin-top: 4px;
+  }
+
+  .remember {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #0F5A6B;
+    font-weight: 500;
+  }
+
+  .remember input {
+    width: 16px;
+    height: 16px;
+    accent-color: #0F5A6B;
+  }
+
+  .forgot {
+    background: none;
+    border: none;
+    font-size: 14px;
+    font-weight: 600;
+    color: #0F5A6B;
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  .forgot:hover { text-decoration: underline; }
+
+  .submit-btn {
+    width: 100%;
+    padding: 15px;
+    background: #0F5A6B;
+    color: #fff;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    font-size: 15px;
+    border: 2px solid rgba(0,0,0,0.8);
+    border-radius: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background 0.15s ease, opacity 0.15s ease;
+  }
+
+  .submit-btn:hover { background: #0d4c5b; }
+  .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  .spinner {
+    width: 18px;
+    height: 18px;
+    border: 2.5px solid rgba(255,255,255,0.4);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .banner {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 18px;
+  }
+
+  .banner.visible { display: flex; }
+
+  .banner.success {
+    background: rgba(255,255,255,0.4);
+    border: 1px solid rgba(255,255,255,0.5);
+    color: #0F5A6B;
+  }
+
+  .banner.success .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #059669;
+    flex-shrink: 0;
+  }
+
+  .banner.error {
+    background: rgba(122,0,0,0.08);
+    border: 1px solid rgba(122,0,0,0.2);
+    color: #7a1a00;
+  }
+
+  .banner.error svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+  .image-side {
+    flex: 1;
+    background: #F5B400 url('https://images.unsplash.com/photo-1548365328-9f547fb0953b?q=80&w=1200&auto=format&fit=crop') center / cover no-repeat;
+  }
+
+  @media (max-width: 768px) {
+    .image-side { display: none; }
+    .card { padding: 32px 24px; border-radius: 22px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+  <div class="form-side">
+    <div class="card">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#F5B400" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 11h.01"/><path d="M11 15h.01"/><path d="M16 16h.01"/>
+            <path d="m2 16 20 6-6-20A20 20 0 0 0 2 16"/>
+            <path d="M5.71 17.11a17.04 17.04 0 0 1 11.4-11.4"/>
+          </svg>
+        </div>
+        <div>
+          <h1>Fatia de Ouro</h1>
+          <p>Acesse sua conta</p>
+        </div>
+      </div>
+
+      <div class="banner success" id="successBanner">
+        <span class="dot"></span>
+        <span id="successText">Login realizado com sucesso!</span>
+      </div>
+
+      <div class="banner error" id="errorBanner">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+          <path d="M12 9v4"/><path d="M12 17h.01"/>
+        </svg>
+        <span id="errorText">Não foi possível entrar. Tente novamente.</span>
+      </div>
+
+      <form id="loginForm" novalidate>
+        <div class="field">
+          <div class="input-wrap">
+            <svg class="icon-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect width="20" height="16" x="2" y="4" rx="2"/>
+              <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+            </svg>
+            <input type="text" id="username" placeholder="Usuário" autocomplete="username" />
+          </div>
+          <p class="error-text" id="usernameError">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+              <path d="M12 9v4"/><path d="M12 17h.01"/>
+            </svg>
+            <span>Informe seu usuário</span>
+          </p>
+        </div>
+
+        <div class="field">
+          <div class="input-wrap">
+            <svg class="icon-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+            <input type="password" id="password" placeholder="Senha" autocomplete="current-password" />
+            <button type="button" class="toggle-pw" id="togglePw" aria-label="Mostrar senha">
+              <svg id="eyeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
+          <p class="error-text" id="passwordError">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+              <path d="M12 9v4"/><path d="M12 17h.01"/>
+            </svg>
+            <span>Informe sua senha</span>
+          </p>
+        </div>
+
+        <div class="row-between">
+          <label class="remember">
+            <input type="checkbox" id="rememberMe" />
+            Lembrar de mim
+          </label>
+          <button type="button" class="forgot">Esqueceu a senha?</button>
+        </div>
+
+        <button type="submit" class="submit-btn" id="submitBtn">
+          <span id="submitLabel">ENTRAR</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div class="image-side" role="img" aria-label="Fatia de pizza de queijo derretido"></div>
+</div>
+
+<script>
+  const form = document.getElementById('loginForm');
+  const usernameInput = document.getElementById('username');
+  const passwordInput = document.getElementById('password');
+  const usernameError = document.getElementById('usernameError');
+  const passwordError = document.getElementById('passwordError');
+  const togglePw = document.getElementById('togglePw');
+  const eyeIcon = document.getElementById('eyeIcon');
+  const submitBtn = document.getElementById('submitBtn');
+  const submitLabel = document.getElementById('submitLabel');
+  const successBanner = document.getElementById('successBanner');
+  const errorBanner = document.getElementById('errorBanner');
+
+  togglePw.addEventListener('click', () => {
+    const isPassword = passwordInput.type === 'password';
+    passwordInput.type = isPassword ? 'text' : 'password';
+    eyeIcon.innerHTML = isPassword
+      ? '<path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/>'
+      : '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>';
+  });
+
+  function validate() {
+    let valid = true;
+    if (!usernameInput.value.trim()) {
+      usernameError.classList.add('visible');
+      valid = false;
+    } else {
+      usernameError.classList.remove('visible');
+    }
+
+    if (!passwordInput.value || passwordInput.value.length < 4) {
+      passwordError.classList.add('visible');
+      valid = false;
+    } else {
+      passwordError.classList.remove('visible');
+    }
+
+    return valid;
+  }
+
+  usernameInput.addEventListener('input', () => {
+    if (usernameError.classList.contains('visible')) validate();
+  });
+  passwordInput.addEventListener('input', () => {
+    if (passwordError.classList.contains('visible')) validate();
+  });
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    successBanner.classList.remove('visible');
+    errorBanner.classList.remove('visible');
+
+    if (!validate()) return;
+
+    submitBtn.disabled = true;
+    submitLabel.innerHTML = '<span class="spinner"></span>';
+
+    // Simulação de chamada de autenticação — troque pela sua lógica real
+    await new Promise((resolve) => setTimeout(resolve, 900));
+
+    submitBtn.disabled = false;
+    submitLabel.textContent = 'ENTRAR';
+    successBanner.classList.add('visible');
+  });
+</script>
+
+</body>
+</html>
