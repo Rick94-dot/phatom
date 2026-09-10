@@ -385,6 +385,232 @@
     height: 220px;
     opacity: 1;
   }
+
+  /* ---------- Tela de chat / cotação ---------- */
+  .chat-screen {
+    display: none;
+    min-height: 100vh;
+    flex-direction: column;
+    background: #ffffff;
+  }
+
+  .chat-screen.visible { display: flex; }
+
+  .chat-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 18px 24px;
+    border-bottom: 1px solid rgba(0,0,0,0.08);
+  }
+
+  .chat-header .brand-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+  }
+
+  .chat-header .brand-icon svg { width: 18px; height: 18px; }
+
+  .chat-header h2 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: #0F5A6B;
+  }
+
+  .chat-back {
+    margin-left: auto;
+    background: none;
+    border: none;
+    font-size: 13px;
+    font-weight: 600;
+    color: #0F5A6B;
+    cursor: pointer;
+  }
+
+  .chat-back:hover { text-decoration: underline; }
+
+  .chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 32px 16px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .chat-messages-inner {
+    width: 100%;
+    max-width: 720px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .chat-empty {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(0,0,0,0.35);
+    font-size: 15px;
+    text-align: center;
+    padding: 0 24px;
+  }
+
+  .msg-row {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    animation: msg-in 0.35s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+  @keyframes msg-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .msg-row.user { flex-direction: row-reverse; }
+
+  .msg-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 13px;
+    font-weight: 700;
+    color: #ffffff;
+  }
+
+  .msg-row.user .msg-avatar { background: #0F5A6B; }
+  .msg-row.bot .msg-avatar { background: #F5B400; color: #111111; }
+
+  .msg-bubble {
+    max-width: 70%;
+    padding: 12px 16px;
+    border-radius: 18px;
+    font-size: 14.5px;
+    line-height: 1.5;
+  }
+
+  .msg-row.user .msg-bubble {
+    background: #0F5A6B;
+    color: #ffffff;
+    border-bottom-right-radius: 4px;
+  }
+
+  .msg-row.bot .msg-bubble {
+    background: #f2f2f2;
+    color: #111111;
+    border-bottom-left-radius: 4px;
+  }
+
+  .chat-input-outer {
+    padding: 16px;
+    display: flex;
+    justify-content: center;
+  }
+
+  .ai-input-box {
+    width: 100%;
+    max-width: 720px;
+    background: #ffffff;
+    border: 1.5px solid rgba(0,0,0,0.12);
+    border-radius: 32px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    overflow: hidden;
+    transition: box-shadow 300ms ease;
+  }
+
+  .ai-input-box.active {
+    box-shadow: 0 8px 32px rgba(0,0,0,0.16);
+  }
+
+  .ai-input-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 10px 10px 18px;
+  }
+
+  .ai-input-row input {
+    flex: 1;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    font-size: 15px;
+    padding: 10px 4px;
+    color: #111111;
+    font-family: inherit;
+  }
+
+  .ai-icon-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    color: #111111;
+    transition: background 150ms ease;
+    flex-shrink: 0;
+  }
+
+  .ai-icon-btn:hover { background: rgba(0,0,0,0.06); }
+
+  .ai-icon-btn.send {
+    background: #111111;
+    color: #ffffff;
+  }
+
+  .ai-icon-btn.send:hover { background: #333333; }
+
+  .ai-input-controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 0 18px 14px;
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: max-height 350ms ease, opacity 300ms ease, padding 350ms ease;
+  }
+
+  .ai-input-box.active .ai-input-controls {
+    max-height: 60px;
+    opacity: 1;
+  }
+
+  .chip-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 999px;
+    border: none;
+    background: #f2f2f2;
+    color: #444444;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 150ms ease, color 150ms ease;
+  }
+
+  .chip-btn:hover { background: #e6e6e6; }
+
+  .chip-btn.on {
+    background: rgba(15, 90, 107, 0.1);
+    color: #0F5A6B;
+    outline: 1px solid rgba(15, 90, 107, 0.4);
+  }
 </style>
 </head>
 <body>
@@ -508,6 +734,65 @@
           <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
         </svg>
       </button>
+    </div>
+  </div>
+</div>
+
+<!-- Tela de chat / cotação -->
+<div class="chat-screen" id="chatScreen">
+  <div class="chat-header">
+    <div class="brand-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#F5B400" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M15 11h.01"/><path d="M11 15h.01"/><path d="M16 16h.01"/>
+        <path d="m2 16 20 6-6-20A20 20 0 0 0 2 16"/>
+        <path d="M5.71 17.11a17.04 17.04 0 0 1 11.4-11.4"/>
+      </svg>
+    </div>
+    <h2>Cotação — Fatia de Ouro</h2>
+    <button type="button" class="chat-back" id="chatBackBtn">Voltar</button>
+  </div>
+
+  <div class="chat-messages" id="chatMessages">
+    <div class="chat-messages-inner" id="chatMessagesInner">
+      <div class="chat-empty" id="chatEmptyState">Digite sua mensagem abaixo para começar sua cotação.</div>
+    </div>
+  </div>
+
+  <div class="chat-input-outer">
+    <div class="ai-input-box" id="aiInputBox">
+      <div class="ai-input-row">
+        <div style="flex:1; position: relative;">
+          <input type="text" id="chatInput" autocomplete="off" />
+        </div>
+        <button type="button" class="ai-icon-btn" id="micBtn" title="Entrada por voz">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+            <path d="M19 10v1a7 7 0 0 1-14 0v-1"/>
+            <line x1="12" x2="12" y1="18" y2="22"/>
+          </svg>
+        </button>
+        <button type="button" class="ai-icon-btn send" id="sendBtn" title="Enviar">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4Z"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="ai-input-controls">
+        <button type="button" class="chip-btn" id="thinkChip">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 18h6"/><path d="M10 22h4"/>
+            <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5.75.75 1.23 1.5 1.41 2.5"/>
+          </svg>
+          Pensar
+        </button>
+        <button type="button" class="chip-btn" id="searchChip">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+          </svg>
+          Buscar
+        </button>
+      </div>
     </div>
   </div>
 </div>
@@ -682,6 +967,110 @@
 
     animate();
   }
+
+  // ---------- Navegação: tela de saudação -> tela de chat ----------
+  const quoteBtn = document.getElementById('quoteBtn');
+  const chatScreen = document.getElementById('chatScreen');
+  const chatBackBtn = document.getElementById('chatBackBtn');
+
+  quoteBtn.addEventListener('click', () => {
+    appScreen.classList.remove('visible');
+    chatScreen.classList.add('visible');
+    chatInput.focus();
+  });
+
+  chatBackBtn.addEventListener('click', () => {
+    chatScreen.classList.remove('visible');
+    appScreen.classList.add('visible');
+  });
+
+  // ---------- Input de chat: placeholder animado, expandir, enviar ----------
+  const PLACEHOLDERS = [
+    'Quero uma cotação para 20 pessoas',
+    'Preciso de 5 pizzas grandes de calabresa',
+    'Qual o valor para uma festa de aniversário?',
+    'Tem opção sem glúten?',
+    'Vocês entregam no meu bairro?',
+  ];
+
+  const aiInputBox = document.getElementById('aiInputBox');
+  const chatInput = document.getElementById('chatInput');
+  const sendBtn = document.getElementById('sendBtn');
+  const thinkChip = document.getElementById('thinkChip');
+  const searchChip = document.getElementById('searchChip');
+  const chatMessagesInner = document.getElementById('chatMessagesInner');
+  const chatMessages = document.getElementById('chatMessages');
+  const chatEmptyState = document.getElementById('chatEmptyState');
+
+  let placeholderIndex = 0;
+  let placeholderTimer = null;
+
+  function cyclePlaceholder() {
+    if (document.activeElement === chatInput || chatInput.value) return;
+    placeholderIndex = (placeholderIndex + 1) % PLACEHOLDERS.length;
+    chatInput.setAttribute('placeholder', PLACEHOLDERS[placeholderIndex]);
+  }
+
+  chatInput.setAttribute('placeholder', PLACEHOLDERS[0]);
+  placeholderTimer = setInterval(cyclePlaceholder, 3000);
+
+  function activateBox() {
+    aiInputBox.classList.add('active');
+  }
+
+  chatInput.addEventListener('focus', activateBox);
+  chatInput.addEventListener('input', activateBox);
+
+  document.addEventListener('mousedown', (e) => {
+    if (!aiInputBox.contains(e.target) && !chatInput.value) {
+      aiInputBox.classList.remove('active');
+    }
+  });
+
+  thinkChip.addEventListener('click', () => thinkChip.classList.toggle('on'));
+  searchChip.addEventListener('click', () => searchChip.classList.toggle('on'));
+
+  function addMessage(text, who) {
+    if (chatEmptyState) chatEmptyState.remove();
+
+    const row = document.createElement('div');
+    row.className = `msg-row ${who}`;
+
+    const avatar = document.createElement('div');
+    avatar.className = 'msg-avatar';
+    avatar.textContent = who === 'user' ? 'EU' : 'FO';
+
+    const bubble = document.createElement('div');
+    bubble.className = 'msg-bubble';
+    bubble.textContent = text;
+
+    row.appendChild(avatar);
+    row.appendChild(bubble);
+    chatMessagesInner.appendChild(row);
+
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+
+  function sendMessage() {
+    const value = chatInput.value.trim();
+    if (!value) return;
+
+    addMessage(value, 'user');
+    chatInput.value = '';
+    aiInputBox.classList.remove('active');
+
+    setTimeout(() => {
+      addMessage('Oi', 'bot');
+    }, 600);
+  }
+
+  sendBtn.addEventListener('click', sendMessage);
+  chatInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
 </script>
 
 </body>
