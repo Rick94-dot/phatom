@@ -4,6 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Fatia de Ouro — Login</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <style>
   * { box-sizing: border-box; }
   html, body {
@@ -709,6 +710,239 @@
     font-size: 11.5px;
     color: rgba(0,0,0,0.5);
   }
+
+  /* ---------- Painel (dashboard) ---------- */
+  .panel-screen {
+    display: none;
+    min-height: 100vh;
+    background: #f7f7f8;
+  }
+
+  .panel-screen.visible { display: block; }
+
+  .panel-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 20px 28px;
+    background: #ffffff;
+    border-bottom: 1px solid rgba(0,0,0,0.08);
+  }
+
+  .panel-header h2 {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 700;
+    color: #0F5A6B;
+  }
+
+  .panel-back {
+    margin-left: auto;
+    background: none;
+    border: none;
+    font-size: 13px;
+    font-weight: 600;
+    color: #0F5A6B;
+    cursor: pointer;
+  }
+
+  .panel-back:hover { text-decoration: underline; }
+
+  .panel-body {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 28px 20px 60px;
+  }
+
+  .panel-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .stat-card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 18px 20px;
+    border: 1px solid rgba(0,0,0,0.06);
+  }
+
+  .stat-card .stat-label {
+    font-size: 12.5px;
+    color: rgba(0,0,0,0.5);
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+
+  .stat-card .stat-value {
+    font-size: 24px;
+    font-weight: 800;
+    color: #111111;
+  }
+
+  .stat-card.accent .stat-value { color: #0F5A6B; }
+
+  .panel-filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 14px;
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 16px 20px;
+    border: 1px solid rgba(0,0,0,0.06);
+    margin-bottom: 24px;
+  }
+
+  .filter-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .filter-field label {
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(0,0,0,0.55);
+  }
+
+  .filter-field input {
+    padding: 9px 12px;
+    border-radius: 10px;
+    border: 1.5px solid rgba(0,0,0,0.15);
+    font-size: 13.5px;
+    font-family: inherit;
+    color: #111111;
+  }
+
+  .filter-apply-btn {
+    padding: 10px 20px;
+    border-radius: 10px;
+    border: none;
+    background: #0F5A6B;
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 13.5px;
+    cursor: pointer;
+  }
+
+  .filter-apply-btn:hover { background: #0d4c5b; }
+
+  .filter-reset-btn {
+    padding: 10px 16px;
+    border-radius: 10px;
+    border: 1.5px solid rgba(0,0,0,0.15);
+    background: transparent;
+    color: #444444;
+    font-weight: 600;
+    font-size: 13.5px;
+    cursor: pointer;
+  }
+
+  .panel-card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 20px;
+    border: 1px solid rgba(0,0,0,0.06);
+    margin-bottom: 24px;
+  }
+
+  .panel-card h3 {
+    margin: 0 0 16px;
+    font-size: 15px;
+    font-weight: 700;
+    color: #111111;
+  }
+
+  .chart-wrap {
+    position: relative;
+    height: 260px;
+  }
+
+  .pending-order {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: rgba(245, 180, 0, 0.12);
+    border: 1.5px solid rgba(245, 180, 0, 0.5);
+    border-radius: 14px;
+    padding: 16px 18px;
+    margin-bottom: 24px;
+  }
+
+  .pending-order .pulse-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #F5B400;
+    flex-shrink: 0;
+    animation: pulse-dot 1.4s infinite ease-in-out;
+  }
+
+  @keyframes pulse-dot {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(245, 180, 0, 0.5); }
+    50% { box-shadow: 0 0 0 8px rgba(245, 180, 0, 0); }
+  }
+
+  .pending-order .pending-info { flex: 1; min-width: 0; }
+
+  .pending-order .pending-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #7a5a00;
+    margin-bottom: 2px;
+  }
+
+  .pending-order .pending-desc {
+    font-size: 13px;
+    color: rgba(0,0,0,0.6);
+  }
+
+  .orders-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+  }
+
+  .orders-table th {
+    text-align: left;
+    padding: 10px 12px;
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: rgba(0,0,0,0.45);
+    border-bottom: 1.5px solid rgba(0,0,0,0.08);
+  }
+
+  .orders-table td {
+    padding: 12px;
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+    color: #222222;
+  }
+
+  .orders-table tr:last-child td { border-bottom: none; }
+
+  .status-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .status-pendente { background: rgba(245, 180, 0, 0.15); color: #7a5a00; }
+  .status-em-preparo { background: rgba(59, 130, 246, 0.12); color: #1d4ed8; }
+  .status-a-caminho { background: rgba(147, 51, 234, 0.12); color: #7e22ce; }
+  .status-entregue { background: rgba(16, 185, 129, 0.12); color: #047857; }
+  .status-cancelado { background: rgba(220, 38, 38, 0.1); color: #b91c1c; }
+
+  .panel-empty {
+    text-align: center;
+    padding: 30px;
+    color: rgba(0,0,0,0.4);
+    font-size: 14px;
+  }
 </style>
 </head>
 <body>
@@ -891,6 +1125,65 @@
           Buscar
         </button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tela do painel (dashboard) -->
+<div class="panel-screen" id="panelScreen">
+  <div class="panel-header">
+    <div class="brand-icon" style="width:36px;height:36px;border-radius:12px;">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#F5B400" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M15 11h.01"/><path d="M11 15h.01"/><path d="M16 16h.01"/>
+        <path d="m2 16 20 6-6-20A20 20 0 0 0 2 16"/>
+        <path d="M5.71 17.11a17.04 17.04 0 0 1 11.4-11.4"/>
+      </svg>
+    </div>
+    <h2>Painel do Cliente — Fatia de Ouro</h2>
+    <button type="button" class="panel-back" id="panelBackBtn">Voltar</button>
+  </div>
+
+  <div class="panel-body">
+    <div id="pendingOrderSlot"></div>
+
+    <div class="panel-stats">
+      <div class="stat-card accent">
+        <div class="stat-label">Pizzas compradas</div>
+        <div class="stat-value" id="statPizzas">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Pedidos no período</div>
+        <div class="stat-value" id="statPedidos">0</div>
+      </div>
+      <div class="stat-card accent">
+        <div class="stat-label">Valor total pago</div>
+        <div class="stat-value" id="statValor">R$ 0</div>
+      </div>
+    </div>
+
+    <div class="panel-filters">
+      <div class="filter-field">
+        <label for="filterFrom">De</label>
+        <input type="date" id="filterFrom" />
+      </div>
+      <div class="filter-field">
+        <label for="filterTo">Até</label>
+        <input type="date" id="filterTo" />
+      </div>
+      <button type="button" class="filter-apply-btn" id="filterApplyBtn">Filtrar</button>
+      <button type="button" class="filter-reset-btn" id="filterResetBtn">Limpar</button>
+    </div>
+
+    <div class="panel-card">
+      <h3>Pizzas compradas por mês</h3>
+      <div class="chart-wrap">
+        <canvas id="pizzasChart"></canvas>
+      </div>
+    </div>
+
+    <div class="panel-card">
+      <h3>Histórico de pedidos</h3>
+      <div id="ordersTableWrap"></div>
     </div>
   </div>
 </div>
@@ -1398,6 +1691,216 @@
       setInputEnabled(false);
       iniciarFluxo();
     }
+  });
+
+  // ---------- Painel (dashboard) ----------
+  const panelBtn = document.getElementById('panelBtn');
+  const panelScreen = document.getElementById('panelScreen');
+  const panelBackBtn = document.getElementById('panelBackBtn');
+  const pendingOrderSlot = document.getElementById('pendingOrderSlot');
+  const statPizzas = document.getElementById('statPizzas');
+  const statPedidos = document.getElementById('statPedidos');
+  const statValor = document.getElementById('statValor');
+  const ordersTableWrap = document.getElementById('ordersTableWrap');
+  const filterFrom = document.getElementById('filterFrom');
+  const filterTo = document.getElementById('filterTo');
+  const filterApplyBtn = document.getElementById('filterApplyBtn');
+  const filterResetBtn = document.getElementById('filterResetBtn');
+
+  // Dados falsos de histórico — fácil de editar/trocar por dados reais depois
+  const PEDIDOS_FALSOS = [
+    { id: 1023, data: '2026-03-04', pizzas: 6, valor: 240, status: 'Entregue' },
+    { id: 1031, data: '2026-04-15', pizzas: 2, valor: 90, status: 'Entregue' },
+    { id: 1042, data: '2026-05-28', pizzas: 15, valor: 560, status: 'Cancelado' },
+    { id: 1050, data: '2026-06-10', pizzas: 4, valor: 180, status: 'Entregue' },
+    { id: 1058, data: '2026-06-22', pizzas: 6, valor: 240, status: 'Entregue' },
+    { id: 1064, data: '2026-07-03', pizzas: 22, valor: 780, status: 'Entregue' },
+    { id: 1071, data: '2026-07-19', pizzas: 2, valor: 90, status: 'A caminho' },
+    { id: 1079, data: '2026-08-02', pizzas: 6, valor: 240, status: 'Entregue' },
+    { id: 1086, data: '2026-08-21', pizzas: 15, valor: 560, status: 'Entregue' },
+    { id: 1092, data: '2026-09-01', pizzas: 4, valor: 180, status: 'Em preparo' },
+  ];
+
+  const STATUS_CLASSES = {
+    'Pendente': 'status-pendente',
+    'Em preparo': 'status-em-preparo',
+    'A caminho': 'status-a-caminho',
+    'Entregue': 'status-entregue',
+    'Cancelado': 'status-cancelado',
+  };
+
+  let pizzasChartInstance = null;
+
+  function getPedidoPendenteDinamico() {
+    if (cotacao.step !== 'finalizado' || !cotacao.tipoEvento) return null;
+
+    const plano = recomendarPlano(cotacao.tipoEvento, cotacao.quantidadePessoas || 1);
+    return {
+      id: 1099,
+      data: new Date().toISOString().slice(0, 10),
+      pizzas: plano.pizzas,
+      valor: plano.valor,
+      status: 'Pendente',
+      titulo: `Pedido recém-feito — ${plano.nome}`,
+      descricao: `${plano.pizzas} pizzas (${cotacao.sabores || 'sabores a definir'}) · ${
+        cotacao.metodoEntrega === 'Receber em casa' ? `entrega em ${cotacao.endereco}` : 'retirada no local'
+      } · ${cotacao.dataHorario || 'data a confirmar'}`,
+    };
+  }
+
+  function renderPendingOrder(pedidoPendente) {
+    if (!pedidoPendente) {
+      pendingOrderSlot.innerHTML = '';
+      return;
+    }
+    pendingOrderSlot.innerHTML = `
+      <div class="pending-order">
+        <span class="pulse-dot"></span>
+        <div class="pending-info">
+          <div class="pending-title">${pedidoPendente.titulo || 'Pedido recém-feito'}</div>
+          <div class="pending-desc">${pedidoPendente.descricao || ''}</div>
+        </div>
+        <span class="status-badge status-pendente">Pendente</span>
+      </div>
+    `;
+  }
+
+  function filtrarPedidos(from, to) {
+    return PEDIDOS_FALSOS.filter((p) => {
+      if (from && p.data < from) return false;
+      if (to && p.data > to) return false;
+      return true;
+    });
+  }
+
+  function renderStats(pedidos) {
+    const totalPizzas = pedidos.reduce((sum, p) => sum + p.pizzas, 0);
+    const totalValor = pedidos
+      .filter((p) => p.status !== 'Cancelado')
+      .reduce((sum, p) => sum + p.valor, 0);
+
+    statPizzas.textContent = totalPizzas;
+    statPedidos.textContent = pedidos.length;
+    statValor.textContent = formatarMoeda(totalValor);
+  }
+
+  function renderOrdersTable(pedidos) {
+    if (pedidos.length === 0) {
+      ordersTableWrap.innerHTML = '<div class="panel-empty">Nenhum pedido encontrado nesse período.</div>';
+      return;
+    }
+
+    const rows = pedidos
+      .slice()
+      .sort((a, b) => (a.data < b.data ? 1 : -1))
+      .map((p) => {
+        const dataFormatada = new Date(p.data + 'T00:00:00').toLocaleDateString('pt-BR');
+        const statusClass = STATUS_CLASSES[p.status] || 'status-entregue';
+        return `
+          <tr>
+            <td>#${p.id}</td>
+            <td>${dataFormatada}</td>
+            <td>${p.pizzas}</td>
+            <td>${formatarMoeda(p.valor)}</td>
+            <td><span class="status-badge ${statusClass}">${p.status}</span></td>
+          </tr>
+        `;
+      })
+      .join('');
+
+    ordersTableWrap.innerHTML = `
+      <table class="orders-table">
+        <thead>
+          <tr>
+            <th>Pedido</th>
+            <th>Data</th>
+            <th>Pizzas</th>
+            <th>Valor</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    `;
+  }
+
+  function renderChart(pedidos) {
+    const porMes = {};
+    pedidos.forEach((p) => {
+      const chave = p.data.slice(0, 7); // YYYY-MM
+      porMes[chave] = (porMes[chave] || 0) + p.pizzas;
+    });
+
+    const chaves = Object.keys(porMes).sort();
+    const labels = chaves.map((k) => {
+      const [ano, mes] = k.split('-');
+      const nomesMes = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+      return `${nomesMes[parseInt(mes, 10) - 1]}/${ano.slice(2)}`;
+    });
+    const valores = chaves.map((k) => porMes[k]);
+
+    const ctx = document.getElementById('pizzasChart').getContext('2d');
+
+    if (pizzasChartInstance) {
+      pizzasChartInstance.destroy();
+    }
+
+    pizzasChartInstance = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels.length ? labels : ['Sem dados'],
+        datasets: [{
+          label: 'Pizzas compradas',
+          data: valores.length ? valores : [0],
+          backgroundColor: '#F5B400',
+          borderRadius: 8,
+          maxBarThickness: 48,
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, ticks: { precision: 0 } },
+        },
+      },
+    });
+  }
+
+  function renderPanel() {
+    const from = filterFrom.value || null;
+    const to = filterTo.value || null;
+
+    const pedidoPendente = getPedidoPendenteDinamico();
+    renderPendingOrder(pedidoPendente);
+
+    let pedidos = filtrarPedidos(from, to);
+    if (pedidoPendente && (!from || pedidoPendente.data >= from) && (!to || pedidoPendente.data <= to)) {
+      pedidos = [pedidoPendente, ...pedidos];
+    }
+
+    renderStats(pedidos);
+    renderOrdersTable(pedidos);
+    renderChart(pedidos);
+  }
+
+  filterApplyBtn.addEventListener('click', renderPanel);
+  filterResetBtn.addEventListener('click', () => {
+    filterFrom.value = '';
+    filterTo.value = '';
+    renderPanel();
+  });
+
+  panelBtn.addEventListener('click', () => {
+    appScreen.classList.remove('visible');
+    panelScreen.classList.add('visible');
+    renderPanel();
+  });
+
+  panelBackBtn.addEventListener('click', () => {
+    panelScreen.classList.remove('visible');
+    appScreen.classList.add('visible');
   });
 </script>
 
