@@ -252,11 +252,47 @@
     .image-side { display: none; }
     .card { padding: 32px 24px; border-radius: 22px; }
   }
+
+  /* ---------- Tela pós-login: texto que se transforma ---------- */
+  .app-screen {
+    display: none;
+    min-height: 100vh;
+    align-items: center;
+    justify-content: center;
+    background: #ffffff;
+  }
+
+  .app-screen.visible {
+    display: flex;
+  }
+
+  .morph-wrap {
+    position: relative;
+    width: 100%;
+    max-width: 900px;
+    height: 90px;
+    padding: 0 24px;
+    text-align: center;
+  }
+
+  .morph-wrap span {
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    display: block;
+    width: 100%;
+    font-size: clamp(28px, 6vw, 56px);
+    font-weight: 700;
+    color: #000000;
+    line-height: 1.1;
+  }
+
+  #filters { position: absolute; width: 0; height: 0; }
 </style>
 </head>
 <body>
 
-<div class="page">
+<div class="page" id="loginPage">
   <div class="form-side">
     <div class="card">
       <div class="brand">
@@ -283,7 +319,7 @@
           <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
           <path d="M12 9v4"/><path d="M12 17h.01"/>
         </svg>
-        <span id="errorText">Não foi possível entrar. Tente novamente.</span>
+        <span id="errorText">Usuário ou senha incorretos.</span>
       </div>
 
       <form id="loginForm" novalidate>
@@ -345,7 +381,34 @@
   <div class="image-side" role="img" aria-label="Fatia de pizza de queijo derretido"></div>
 </div>
 
+<!-- Tela exibida após o login -->
+<div class="app-screen" id="appScreen">
+  <div class="morph-wrap" style="filter: url(#threshold) blur(0.6px);">
+    <span id="morphText1"></span>
+    <span id="morphText2"></span>
+  </div>
+</div>
+
+<svg id="filters" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <filter id="threshold">
+      <feColorMatrix
+        in="SourceGraphic"
+        type="matrix"
+        values="1 0 0 0 0
+                0 1 0 0 0
+                0 0 1 0 0
+                0 0 0 255 -140"
+      />
+    </filter>
+  </defs>
+</svg>
+
 <script>
+  // Credenciais de teste — este site não guarda nada sensível
+  const TEST_USER = 'TESTE';
+  const TEST_PASS = 'TESTE';
+
   const form = document.getElementById('loginForm');
   const usernameInput = document.getElementById('username');
   const passwordInput = document.getElementById('password');
@@ -357,6 +420,9 @@
   const submitLabel = document.getElementById('submitLabel');
   const successBanner = document.getElementById('successBanner');
   const errorBanner = document.getElementById('errorBanner');
+  const errorText = document.getElementById('errorText');
+  const loginPage = document.getElementById('loginPage');
+  const appScreen = document.getElementById('appScreen');
 
   togglePw.addEventListener('click', () => {
     const isPassword = passwordInput.type === 'password';
@@ -375,7 +441,7 @@
       usernameError.classList.remove('visible');
     }
 
-    if (!passwordInput.value || passwordInput.value.length < 4) {
+    if (!passwordInput.value) {
       passwordError.classList.add('visible');
       valid = false;
     } else {
@@ -402,13 +468,97 @@
     submitBtn.disabled = true;
     submitLabel.innerHTML = '<span class="spinner"></span>';
 
-    // Simulação de chamada de autenticação — troque pela sua lógica real
-    await new Promise((resolve) => setTimeout(resolve, 900));
+    await new Promise((resolve) => setTimeout(resolve, 700));
+
+    const correct =
+      usernameInput.value.trim().toUpperCase() === TEST_USER &&
+      passwordInput.value === TEST_PASS;
 
     submitBtn.disabled = false;
     submitLabel.textContent = 'ENTRAR';
-    successBanner.classList.add('visible');
+
+    if (correct) {
+      successBanner.classList.add('visible');
+      setTimeout(() => {
+        loginPage.style.display = 'none';
+        appScreen.classList.add('visible');
+        startMorphingText(['Olá', 'O que quer fazer hoje?']);
+      }, 500);
+    } else {
+      errorText.textContent = 'Usuário ou senha incorretos.';
+      errorBanner.classList.add('visible');
+    }
   });
+
+  // ---------- Texto que se transforma (baseado no efeito morphing-text) ----------
+  function startMorphingText(texts) {
+    const morphTime = 1.5;
+    const cooldownTime = 0.5;
+
+    const text1 = document.getElementById('morphText1');
+    const text2 = document.getElementById('morphText2');
+
+    let textIndex = 0;
+    let morph = 0;
+    let cooldown = cooldownTime;
+    let time = new Date();
+
+    text1.textContent = texts[0];
+    text2.textContent = texts[1 % texts.length];
+    text1.style.opacity = '100%';
+    text2.style.opacity = '0%';
+
+    function setStyles(fraction) {
+      text2.style.filter = `blur(${Math.min(8 / fraction - 8, 100)}px)`;
+      text2.style.opacity = `${Math.pow(fraction, 0.4) * 100}%`;
+
+      const inv = 1 - fraction;
+      text1.style.filter = `blur(${Math.min(8 / inv - 8, 100)}px)`;
+      text1.style.opacity = `${Math.pow(inv, 0.4) * 100}%`;
+
+      text1.textContent = texts[textIndex % texts.length];
+      text2.textContent = texts[(textIndex + 1) % texts.length];
+    }
+
+    function doMorph() {
+      morph -= cooldown;
+      cooldown = 0;
+
+      let fraction = morph / morphTime;
+      if (fraction > 1) {
+        cooldown = cooldownTime;
+        fraction = 1;
+      }
+
+      setStyles(fraction);
+
+      if (fraction === 1) {
+        textIndex++;
+      }
+    }
+
+    function doCooldown() {
+      morph = 0;
+      text2.style.filter = 'none';
+      text2.style.opacity = '100%';
+      text1.style.filter = 'none';
+      text1.style.opacity = '0%';
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      const newTime = new Date();
+      const dt = (newTime.getTime() - time.getTime()) / 1000;
+      time = newTime;
+
+      cooldown -= dt;
+
+      if (cooldown <= 0) doMorph();
+      else doCooldown();
+    }
+
+    animate();
+  }
 </script>
 
 </body>
